@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+
+	<title>EXAMPLE PARALLAX</title>
+	<meta name="description" content="EXAMPLE PARALLAX" />
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+		}
+
+		#container {
+			position: relative;
+			height: 100%;
+			width: 100%;
+			/*overflow: hidden;*/
+		}
+
+		#content {
+			position: relative;
+			width: 80%;
+			margin: 500px auto;
+			height: 350px;
+			border: 2px solid black;
+			overflow: hidden;
+		}
+
+		#parallax {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: auto;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="container">
+		<div id="content">
+			<div id="parallax"><img src="image.jpg" style="width: 100%; height: auto;" /></div>
+		</div>
+	</div>
+
+	<script src="jquery-2.0.0.min.js"></script>
+	<script src="support.js"></script>
+	<script src="jquery.parallax.js"></script>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/plugins/ScrollToPlugin.min.js"></script>
+	<script src="smoothPageScroll.js"></script>
+
+	<script>
+		$(document).ready(function() {
+
+			// requestAnimationFrame polyfill
+			(function() {
+			    var lastTime = 0;
+			    var vendors = ['ms', 'moz', 'webkit', 'o'];
+			    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+			        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+			        window.cancelRequestAnimationFrame = window[vendors[x]+
+			          'CancelRequestAnimationFrame'];
+			    }
+
+			    if (!window.requestAnimationFrame)
+			        window.requestAnimationFrame = function(callback, element) {
+			            var currTime = new Date().getTime();
+			            var timeToCall = Math.max(0, 16 - (currTime - lastTime)); //if ie timetocall = 1000/60
+			            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+			              timeToCall);
+			            lastTime = currTime + timeToCall;
+			            return id;
+			        };
+
+			    if (!window.cancelAnimationFrame)
+			        window.cancelAnimationFrame = function(id) {
+			            clearTimeout(id);
+			        };
+			}());
+
+
+			var startIndex, endIndex, startValue, endValue;
+			var resizeTimer;
+			var docHeight = window.innerHeight || document.documentElement.clientHeight;
+
+			function calculateParallaxValue() {
+		        startIndex = 0;
+		        endIndex = $('html, body').prop('scrollHeight') - docHeight;
+		        startValue = 0;
+		        endValue = $('#content').outerHeight() - $('#parallax').height();
+
+		        console.log(startIndex, endIndex, startValue, endValue);
+		    }
+
+		    function majParallax() {
+		        calculateParallaxValue();
+
+	            $('#parallax').data('parallax').options.top.startIndex = startIndex;
+	            $('#parallax').data('parallax').options.top.endIndex = endIndex;
+	            $('#parallax').data('parallax').options.top.startValue = startValue;
+	            $('#parallax').data('parallax').options.top.endValue = endValue;
+		    }
+
+			function updateParallax(){
+			    var scrollTop = $(window).scrollTop();
+				$('#parallax').data('parallax').update(scrollTop);
+			}
+
+			function initParallax() {
+				calculateParallaxValue();
+
+				$('#parallax').parallax({
+					'top': {
+						startIndex: startIndex,
+						endIndex: endIndex,
+						startValue: startValue,
+						endValue: endValue,
+						easing: 'linear'
+					}
+				});
+			}
+
+			initParallax();
+
+			$(window).on('scroll', function() {
+				document.title = $(window).scrollTop();
+				window.requestAnimationFrame(updateParallax);
+			});
+
+			$(window).on('resize', function() {
+				clearTimeout(resizeTimer);
+				docHeight = window.innerHeight || document.documentElement.clientHeight;
+		        resizeTimer = setTimeout(function() {
+		            majParallax();
+		            updateParallax();
+		        }, 100);
+			});
+		});
+	</script>
+</body>
+</html>
